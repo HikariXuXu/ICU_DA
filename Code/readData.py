@@ -25,19 +25,19 @@ class ReadPhysioNet():
         self.originalTrainingData = self.readData(trainingDataPath, trainingLabelPath)
         self.mergedTrainingData, self.trainingLabel, self.trainingTimes, self.mean, self.max, self.min = self.mergeTrainingData()
         self.scaledTrainingData = self.featureScale('training')
-        sliceTrainingData, trainingDeltaMat, trainingMaskMat = self.sliceData(self.scaledTrainingData, self.trainingTimes)
+        self.sliceTrainingData, self.trainingDeltaMat, self.trainingMaskMat = self.sliceData(self.scaledTrainingData, self.trainingTimes)
         
         print('Transform Testing Data 1...')
         self.originalTestingData1 = self.readData(testingData1Path, testingLabel1Path)
         self.mergedTestingData1, self.testingLabel1, self.testingTimes1 = self.mergeTestingData(1)
         self.scaledTestingData1 = self.featureScale('testing1')
-        sliceTestingData1, testing1DeltaMat, testing1MaskMat = self.sliceData(self.scaledTestingData1, self.testingTimes1)
+        self.sliceTestingData1, self.testing1DeltaMat, self.testing1MaskMat = self.sliceData(self.scaledTestingData1, self.testingTimes1)
         
         print('Transform Testing Data 2...')
         self.originalTestingData2 = self.readData(testingData2Path, testingLabel2Path)
         self.mergedTestingData2, self.testingLabel2, self.testingTimes2 = self.mergeTestingData(2)
         self.scaledTestingData2 = self.featureScale('testing2')
-        sliceTestingData2, testing2DeltaMat, testing2MaskMat = self.sliceData(self.scaledTestingData2, self.testingTimes2)
+        self.sliceTestingData2, self.testing2DeltaMat, self.testing2MaskMat = self.sliceData(self.scaledTestingData2, self.testingTimes2)
     
     
     def readData(self, dataPath, labelPath):
@@ -366,6 +366,7 @@ class ReadPhysioNet():
             deltaMat.append(delta)
             maskMat.append(mask)
         return sliceData, deltaMat, maskMat
+
 
 
 if __name__ == '__main__':
