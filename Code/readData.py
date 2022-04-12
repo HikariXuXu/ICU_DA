@@ -8,6 +8,8 @@ import os
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+import pickle
+
 
 class ReadPhysioNet():
     
@@ -38,7 +40,7 @@ class ReadPhysioNet():
         self.mergedTestingData2, self.testingLabel2, self.testingTimes2 = self.mergeTestingData(2)
         self.scaledTestingData2 = self.featureScale('testing2')
         self.sliceTestingData2, self.testing2DeltaMat, self.testing2MaskMat = self.sliceData(self.scaledTestingData2, self.testingTimes2)
-    
+        
     
     def readData(self, dataPath, labelPath):
         label = pd.read_csv(labelPath, usecols=['RecordID', 'In-hospital_death'])
@@ -302,7 +304,7 @@ class ReadPhysioNet():
                     sumExistTime = mask[0]*times[i][j]
                     count = count+mask[0]
                 elif j == len(inputData[i])-1:
-                    if times[i][j] < lastTime+sliceGap:
+                    if times[i][j] <= lastTime+sliceGap:
                         oneMask = (np.array(inputData[i][j])!=-1)+0
                         newMask = ((mask[-1]+oneMask)>0)+0
                         obsData[-1] = obsData[-1]*mask[-1] + np.array(inputData[i][j])*oneMask - np.ones(len(self.dic)-1)*(1-newMask)
@@ -319,21 +321,30 @@ class ReadPhysioNet():
                         lastExistTime = lastExistTime*(1-mask[-1])+sumExistTime/count
                         delta.append((lastTime+sliceGap/2-lastExistTime)*(1-mask[-1]))
                         
-                        if (times[i][j]-lastTime)//sliceGap >= 2:
+                        if (times[i][j]-lastTime-1)//sliceGap >= 2:
                             for numGap in range((times[i][j]-lastTime)//sliceGap-1):
                                 obsData.append(-np.ones(len(self.dic)-1))
                                 obsData[-1][:7] = obsData[0][:7]
                                 mask.append(np.zeros(len(self.dic)-1))
                                 mask[-1][:7] = mask[0][:7]
                                 delta.append((lastTime+(numGap+1.5)*sliceGap-lastExistTime)*(1-mask[-1]))
-                        lastTime += ((times[i][j]-lastTime)//sliceGap)*sliceGap
+                        lastTime += ((times[i][j]-lastTime-1)//sliceGap)*sliceGap
                         obsData.append(np.array(inputData[i][j]))
                         mask.append((np.array(inputData[i][j])!=-1)+0)
                         sumExistTime = mask[-1]*times[i][j]
                         lastExistTime = lastExistTime*(1-mask[-1])+mask[-1]*times[i][j]
                         delta.append((lastTime+sliceGap/2-lastExistTime)*(1-mask[-1]))
+                        
+                        if lastTime != 48*60-sliceGap:
+                            for numGap in range((48*60-lastTime-1)//sliceGap):
+                                obsData.append(-np.ones(len(self.dic)-1))
+                                obsData[-1][:7] = obsData[0][:7]
+                                mask.append(np.zeros(len(self.dic)-1))
+                                mask[-1][:7] = mask[0][:7]
+                                delta.append((lastTime+(numGap+1.5)*sliceGap-lastExistTime)*(1-mask[-1]))
+                                
                 else:
-                    if times[i][j] < lastTime+sliceGap:
+                    if times[i][j] <= lastTime+sliceGap:
                         oneMask = (np.array(inputData[i][j])!=-1)+0
                         newMask = ((mask[-1]+oneMask)>0)+0
                         obsData[-1] = obsData[-1]*mask[-1] + np.array(inputData[i][j])*oneMask - np.ones(len(self.dic)-1)*(1-newMask)
@@ -350,14 +361,14 @@ class ReadPhysioNet():
                         sumExistTime = np.zeros(len(self.dic)-1)
                         count = np.zeros(len(self.dic)-1)
                         
-                        if (times[i][j]-lastTime)//sliceGap >= 2:
-                            for numGap in range((times[i][j]-lastTime)//sliceGap-1):
+                        if (times[i][j]-lastTime-1)//sliceGap >= 2:
+                            for numGap in range((times[i][j]-lastTime-1)//sliceGap-1):
                                 obsData.append(-np.ones(len(self.dic)-1))
                                 obsData[-1][:7] = obsData[0][:7]
                                 mask.append(np.zeros(len(self.dic)-1))
                                 mask[-1][:7] = mask[0][:7]
                                 delta.append((lastTime+(numGap+1.5)*sliceGap-lastExistTime)*(1-mask[-1]))
-                        lastTime += ((times[i][j]-lastTime)//sliceGap)*sliceGap
+                        lastTime += ((times[i][j]-lastTime-1)//sliceGap)*sliceGap
                         obsData.append(np.array(inputData[i][j]))
                         mask.append((np.array(inputData[i][j])!=-1)+0)
                         sumExistTime = mask[-1]*times[i][j]
@@ -369,7 +380,10 @@ class ReadPhysioNet():
 
 
 
-if __name__ == '__main__':
-    data = ReadPhysioNet('E:/WashU/Research/ICU/Data/set-a', 'E:/WashU/Research/ICU/Data/Outcomes-a.txt', 
+data = ReadPhysioNet('E:/WashU/Research/ICU/Data/set-a', 'E:/WashU/Research/ICU/Data/Outcomes-a.txt', 
                      'E:/WashU/Research/ICU/Data/set-b', 'E:/WashU/Research/ICU/Data/Outcomes-b.txt', 
                      'E:/WashU/Research/ICU/Data/set-c', 'E:/WashU/Research/ICU/Data/Outcomes-c.txt', featureScaling='Normalization')
+
+with open('E:/WashU/Research/ICU/Data/ReadPhysioNet.txt', 'wb') as f:
+    pickle.dump(data, f)
+    f.close()
