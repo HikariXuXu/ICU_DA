@@ -322,7 +322,7 @@ class ReadPhysioNet():
                         delta.append((lastTime+sliceGap/2-lastExistTime)*(1-mask[-1]))
                         
                         if (times[i][j]-lastTime-1)//sliceGap >= 2:
-                            for numGap in range((times[i][j]-lastTime)//sliceGap-1):
+                            for numGap in range((times[i][j]-lastTime-1)//sliceGap-1):
                                 obsData.append(-np.ones(len(self.dic)-1))
                                 obsData[-1][:7] = obsData[0][:7]
                                 mask.append(np.zeros(len(self.dic)-1))
@@ -335,13 +335,13 @@ class ReadPhysioNet():
                         lastExistTime = lastExistTime*(1-mask[-1])+mask[-1]*times[i][j]
                         delta.append((lastTime+sliceGap/2-lastExistTime)*(1-mask[-1]))
                         
-                        if lastTime != 48*60-sliceGap:
-                            for numGap in range((48*60-lastTime-1)//sliceGap):
-                                obsData.append(-np.ones(len(self.dic)-1))
-                                obsData[-1][:7] = obsData[0][:7]
-                                mask.append(np.zeros(len(self.dic)-1))
-                                mask[-1][:7] = mask[0][:7]
-                                delta.append((lastTime+(numGap+1.5)*sliceGap-lastExistTime)*(1-mask[-1]))
+                    if lastTime != 48*60-sliceGap:
+                        for numGap in range((48*60-lastTime-1)//sliceGap):
+                            obsData.append(-np.ones(len(self.dic)-1))
+                            obsData[-1][:7] = obsData[0][:7]
+                            mask.append(np.zeros(len(self.dic)-1))
+                            mask[-1][:7] = mask[0][:7]
+                            delta.append((lastTime+(numGap+1.5)*sliceGap-lastExistTime)*(1-mask[-1]))
                                 
                 else:
                     if times[i][j] <= lastTime+sliceGap:
