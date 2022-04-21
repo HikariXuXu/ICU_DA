@@ -254,6 +254,7 @@ class ReadPhysioNet():
                     for k in range(len(mergedData[i])):
                         if mergedData[i][k][j] != -1:
                             mergedData[i][k][j] = (mergedData[i][k][j]-self.mean[j])/self.std[j]
+            self.mean = np.zeros(len(self.mean))
             return mergedData
                             
         elif self.featureScaling == 'Normalization':
@@ -270,6 +271,7 @@ class ReadPhysioNet():
                     for k in range(len(mergedData[i])):
                         if mergedData[i][k][j] != -1:
                             mergedData[i][k][j] = (mergedData[i][k][j]-self.min[j])/maxMinusMin[j]
+            self.mean = (self.mean-self.min)/maxMinusMin
             return mergedData
         
         else:
@@ -379,11 +381,92 @@ class ReadPhysioNet():
         return sliceData, deltaMat, maskMat
 
 
+def main():
+    # Processing data with normalization
+    data = ReadPhysioNet('../Data/set-a', '../Data/Outcomes-a.txt', 
+                         '../Data/set-b', '../Data/Outcomes-b.txt', 
+                         '../Data/set-c', '../Data/Outcomes-c.txt', featureScaling='Normalization')
+    with open('../Data/train/X_train_sliced_norm.pkl', 'wb') as f:
+        pickle.dump(data.sliceTrainingData, f)
+        f.close()
+    with open('../Data/train/train_delta_mat.pkl', 'wb') as f:
+        pickle.dump(data.trainingDeltaMat, f)
+        f.close()
+    with open('../Data/train/train_mask_mat.pkl', 'wb') as f:
+        pickle.dump(data.trainingMaskMat, f)
+        f.close()
+    with open('../Data/train/y_train.pkl', 'wb') as f:
+        pickle.dump(data.trainingLabel, f)
+        f.close()
+    with open('../Data/test1/X_test1_sliced_norm.pkl', 'wb') as f:
+        pickle.dump(data.sliceTestingData1, f)
+        f.close()
+    with open('../Data/test1/test1_delta_mat.pkl', 'wb') as f:
+        pickle.dump(data.testing1DeltaMat, f)
+        f.close()
+    with open('../Data/test1/test1_mask_mat.pkl', 'wb') as f:
+        pickle.dump(data.testing1MaskMat, f)
+        f.close()
+    with open('../Data/test1/y_test1.pkl', 'wb') as f:
+        pickle.dump(data.testingLabel1, f)
+        f.close()
+    with open('../Data/test2/X_test2_sliced_norm.pkl', 'wb') as f:
+        pickle.dump(data.sliceTestingData2, f)
+        f.close()
+    with open('../Data/test2/test2_delta_mat.pkl', 'wb') as f:
+        pickle.dump(data.testing2DeltaMat, f)
+        f.close()
+    with open('../Data/test2/test2_mask_mat.pkl', 'wb') as f:
+        pickle.dump(data.testing2MaskMat, f)
+        f.close()
+    with open('../Data/test2/y_test2.pkl', 'wb') as f:
+        pickle.dump(data.testingLabel2, f)
+        f.close()
+    with open('../Data/mean_norm.pkl', 'wb') as f:
+        pickle.dump(data.mean, f)
+        f.close()
+    
+    # Processing data with standardization
+    data.featureScaling = 'Standardization'
+    data.scaledTrainingData = data.featureScale('training')
+    data.sliceTrainingData, data.trainingDeltaMat, data.trainingMaskMat = data.sliceData(data.scaledTrainingData, data.trainingTimes)
+    data.scaledTestingData1 = data.featureScale('testing1')
+    data.sliceTestingData1, data.testing1DeltaMat, data.testing1MaskMat = data.sliceData(data.scaledTestingData1, data.testingTimes1)
+    data.scaledTestingData2 = data.featureScale('testing2')
+    data.sliceTestingData2, data.testing2DeltaMat, data.testing2MaskMat = data.sliceData(data.scaledTestingData2, data.testingTimes2)
+    with open('../Data/train/X_train_sliced_std.pkl', 'wb') as f:
+        pickle.dump(data.sliceTrainingData, f)
+        f.close()
+    with open('../Data/test1/X_test1_sliced_std.pkl', 'wb') as f:
+        pickle.dump(data.sliceTestingData1, f)
+        f.close()
+    with open('../Data/test2/X_test2_sliced_std.pkl', 'wb') as f:
+        pickle.dump(data.sliceTestingData2, f)
+        f.close()
+    with open('../Data/mean_std.pkl', 'wb') as f:
+        pickle.dump(data.mean, f)
+        f.close()
+    
+    # Processing data without normalization or standardization
+    data.featureScaling = 0
+    data.scaledTrainingData = data.featureScale('training')
+    data.sliceTrainingData, data.trainingDeltaMat, data.trainingMaskMat = data.sliceData(data.scaledTrainingData, data.trainingTimes)
+    data.scaledTestingData1 = data.featureScale('testing1')
+    data.sliceTestingData1, data.testing1DeltaMat, data.testing1MaskMat = data.sliceData(data.scaledTestingData1, data.testingTimes1)
+    data.scaledTestingData2 = data.featureScale('testing2')
+    data.sliceTestingData2, data.testing2DeltaMat, data.testing2MaskMat = data.sliceData(data.scaledTestingData2, data.testingTimes2)
+    with open('../Data/train/X_train_sliced.pkl', 'wb') as f:
+        pickle.dump(data.sliceTrainingData, f)
+        f.close()
+    with open('../Data/test1/X_test1_sliced.pkl', 'wb') as f:
+        pickle.dump(data.sliceTestingData1, f)
+        f.close()
+    with open('../Data/test2/X_test2_sliced.pkl', 'wb') as f:
+        pickle.dump(data.sliceTestingData2, f)
+        f.close()
+    with open('../Data/mean.pkl', 'wb') as f:
+        pickle.dump(data.mean, f)
+        f.close()
 
-data = ReadPhysioNet('E:/WashU/Research/ICU/Data/set-a', 'E:/WashU/Research/ICU/Data/Outcomes-a.txt', 
-                     'E:/WashU/Research/ICU/Data/set-b', 'E:/WashU/Research/ICU/Data/Outcomes-b.txt', 
-                     'E:/WashU/Research/ICU/Data/set-c', 'E:/WashU/Research/ICU/Data/Outcomes-c.txt', featureScaling='Normalization')
-
-with open('E:/WashU/Research/ICU/Data/ReadPhysioNet.txt', 'wb') as f:
-    pickle.dump(data, f)
-    f.close()
+if __name__ == "__main__":
+    main()
