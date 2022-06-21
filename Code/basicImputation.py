@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 
-def imputeDataMean(scliedData, MaskMat, meanvalue):
+def imputeMean(scliedData, MaskMat, meanvalue):
     imputedata = []
     for i in range(len(scliedData)):
         a = np.array(scliedData[i])
@@ -22,7 +22,7 @@ def imputeDataMean(scliedData, MaskMat, meanvalue):
         imputedata.append(a)
     return imputedata
 
-def imputeDataNearest(sliceData, meanvalue):
+def imputeNearest(sliceData, meanvalue):
     imputedata = []
     for i in range(len(sliceData)):
         a = np.array(sliceData[i])

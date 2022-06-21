@@ -176,6 +176,6 @@ def imputation(generator, discriminator, X, M, z_dim, batch_size, lr, g_loss_lam
         batch_id += 1
         impute_times = 0
     
-    with open('E:/WashU/Research/ICU/Data/val/X_val_sliced_norm_GAN.pkl', 'wb') as f:
+    with open('E:/WashU/Research/ICU/Data/val/X_val_sliced_norm_nearestGAN.pkl', 'wb') as f:
         pickle.dump(X_imputed, f)
         f.close()

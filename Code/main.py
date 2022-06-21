@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 from train import train, imputation
+from basicImputation import imputeMean, imputeNearest, imputeLast
 
 
 f = open('E:/WashU/Research/ICU/Data/train/X_train_sliced_norm.pkl','rb')
@@ -42,14 +43,14 @@ f = open('E:/WashU/Research/ICU/Data/test/test_mask_mat.pkl','rb')
 test_mask_mat = np.array(pickle.load(f))
 f.close()
 
-'''
+
 f = open('E:/WashU/Research/ICU/Data/mean_norm.pkl','rb')
 mean = np.array(pickle.load(f))
 f.close()
-'''
 
-# X_train = np.array(imputeDataNearest(X_train_sliced, mean))
-# X_val = np.array(imputeDataNearest(X_val_sliced, mean))
+
+X_train_sliced = np.array(imputeNearest(X_train_sliced, mean))
+X_val_sliced = np.array(imputeNearest(X_val_sliced, mean))
 
 generator, discriminator = train(X_train_sliced, train_mask_mat, train_delta_mat, 128, 23, 10, 0.01, 8)
 imputation(generator, discriminator, X_train_sliced, train_mask_mat, 64, 128, 0.01, 5, 300)

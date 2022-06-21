@@ -10,7 +10,7 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
 import pickle
 
-f = open('E:/WashU/Research/ICU/Data/train/X_train_sliced_norm_GAN.pkl','rb')
+f = open('E:/WashU/Research/ICU/Data/train/X_train_sliced_norm_nearestGAN.pkl','rb')
 X_train_sliced = pickle.load(f)
 f.close()
 f = open('E:/WashU/Research/ICU/Data/train/y_train.pkl','rb')
@@ -20,7 +20,7 @@ f = open('E:/WashU/Research/ICU/Data/train/train_mask_mat.pkl','rb')
 train_mask_mat = pickle.load(f)
 f.close()
 
-f = open('E:/WashU/Research/ICU/Data/val/X_val_sliced_norm_GAN.pkl','rb')
+f = open('E:/WashU/Research/ICU/Data/val/X_val_sliced_norm_nearestGAN.pkl','rb')
 X_test_sliced = pickle.load(f)
 f.close()
 f = open('E:/WashU/Research/ICU/Data/val/y_val.pkl','rb')
