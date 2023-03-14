@@ -103,12 +103,12 @@ def train_grui_model(model, X_train, y_train, train_delta_mat, X_val, y_val, val
     
     # save
     torch.save(model.state_dict(), 'E:/WashU/Research/ICU/modelParams/{}_{}_{}_{}_{}_{}_{}.pth'.format(model.imputeMethod, 
-                                                                                                          model.scaleMethod, 
-                                                                                                          model.name, 
-                                                                                                          model.num_hiddens, 
-                                                                                                          batch_size, 
-                                                                                                          lr, 
-                                                                                                          num_epoch))
+                                                                                                       model.scaleMethod, 
+                                                                                                       model.name, 
+                                                                                                       model.num_hiddens, 
+                                                                                                       batch_size, 
+                                                                                                       lr, 
+                                                                                                       num_epoch))
     
     return model
 

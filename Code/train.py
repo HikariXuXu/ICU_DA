@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import pickle
 from WGAN_GRUI import PretrainGenerator, Generator, Discriminator
+# from WGAN_GRUM import PretrainGenerator, Generator, Discriminator
 from loss import MRLoss, DLoss, GLoss, ImpLoss
 
 torch.manual_seed(0)
@@ -66,7 +67,7 @@ def pretrain(model, X, M, Delta, batch_size, num_epoch, lr):
 def train(X, M, Delta, batch_size, num_epoch, num_pretrain_epoch, lr, disc_iters):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     pretrain_model = PretrainGenerator(X.shape[2], 64, 60, 0.5).to(device)
-    generator = Generator(X.shape[2], 64, 60, 64, 0.5).to(device)
+    generator = Generator(X.shape[2], 64, 60, 0.5).to(device)
     discriminator = Discriminator(X.shape[2], 64, 0.5).to(device)
     
     X = torch.from_numpy(X).float()
@@ -98,7 +99,7 @@ def train(X, M, Delta, batch_size, num_epoch, num_pretrain_epoch, lr, disc_iters
                 Delta_batch = Delta[int(step * batch_size):]
             
             # Update Discriminator Networks
-            outputs, delta, final_state = generator(None, None, batch_size)
+            outputs, delta, final_state = generator(X_batch.transpose(0, 1), None)
             d_real_probs, d_real_logits = discriminator(X_batch.transpose(0, 1), Delta_batch.transpose(0, 1), None)
             d_fake_probs, d_fake_logits = discriminator(outputs, delta, None)
             d_loss = d_criterion(d_real_logits, d_fake_logits)
@@ -110,7 +111,7 @@ def train(X, M, Delta, batch_size, num_epoch, num_pretrain_epoch, lr, disc_iters
             
             # Update Generator Networks
             if counter % disc_iters == 0:
-                outputs, delta, final_state = generator(None, None, batch_size)
+                outputs, delta, final_state = generator(X_batch.transpose(0, 1), None)
                 d_real_probs, d_real_logits = discriminator(X_batch.transpose(0, 1), Delta_batch.transpose(0, 1), None)
                 d_fake_probs, d_fake_logits = discriminator(outputs, delta, None)
                 d_loss = d_criterion(d_real_logits, d_fake_logits)
@@ -127,7 +128,7 @@ def train(X, M, Delta, batch_size, num_epoch, num_pretrain_epoch, lr, disc_iters
     return generator, discriminator
 
 
-def imputation(generator, discriminator, X, M, z_dim, batch_size, lr, g_loss_lambda, impute_iters):
+def imputation(generator, discriminator, X, M, batch_size, lr, g_loss_lambda, impute_iters):
     batch_id = 1
     impute_times = 0
     counter = 0
@@ -148,7 +149,7 @@ def imputation(generator, discriminator, X, M, z_dim, batch_size, lr, g_loss_lam
             M_batch = M[int(step * batch_size):]
         
         generator_dict = generator.state_dict()
-        gen = Generator(X.shape[2], 64, 60, 64, 0).to(device)
+        gen = Generator(X.shape[2], 64, 60, 0).to(device)
         gen_dict = gen.state_dict()
         gen_dict.update(generator_dict)
         gen.load_state_dict(gen_dict)
@@ -156,10 +157,9 @@ def imputation(generator, discriminator, X, M, z_dim, batch_size, lr, g_loss_lam
         criterion = ImpLoss(g_loss_lambda)
         optimizer = torch.optim.SGD(gen.parameters(), lr * 7)
         
-        Z = torch.randn((X.shape[1], batch_size, z_dim)) * 0.1
         init_state = None
         for i in range(impute_iters):
-            outputs, delta, final_state = gen(Z, init_state, batch_size)
+            outputs, delta, final_state = gen(X_batch.transpose(0, 1), init_state)
             init_state = final_state.detach()
             imputed_fake_probs, imputed_fake_logits = discriminator(outputs, delta, None)
             loss = criterion(X_batch, M_batch, outputs, imputed_fake_logits)
@@ -176,6 +176,6 @@ def imputation(generator, discriminator, X, M, z_dim, batch_size, lr, g_loss_lam
         batch_id += 1
         impute_times = 0
     
-    with open('E:/WashU/Research/ICU/Data/val/X_val_sliced_norm_nearestGAN.pkl', 'wb') as f:
+    with open('E:/WashU/Research/ICU/Data/val/X_val_sliced_norm_lastGAN.pkl', 'wb') as f:
         pickle.dump(X_imputed, f)
         f.close()

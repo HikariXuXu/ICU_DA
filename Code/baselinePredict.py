@@ -5,12 +5,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn import metrics
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
-from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
 import pickle
 
-f = open('E:/WashU/Research/ICU/Data/train/X_train_sliced_norm_nearestGAN.pkl','rb')
+f = open('E:/WashU/Research/ICU/Data/train/X_train_sliced_norm_lastGAN.pkl','rb')
 X_train_sliced = pickle.load(f)
 f.close()
 f = open('E:/WashU/Research/ICU/Data/train/y_train.pkl','rb')
@@ -20,7 +19,7 @@ f = open('E:/WashU/Research/ICU/Data/train/train_mask_mat.pkl','rb')
 train_mask_mat = pickle.load(f)
 f.close()
 
-f = open('E:/WashU/Research/ICU/Data/val/X_val_sliced_norm_nearestGAN.pkl','rb')
+f = open('E:/WashU/Research/ICU/Data/val/X_val_sliced_norm_lastGAN.pkl','rb')
 X_test_sliced = pickle.load(f)
 f.close()
 f = open('E:/WashU/Research/ICU/Data/val/y_val.pkl','rb')
@@ -89,15 +88,6 @@ rforest_auc = metrics.roc_auc_score(y_test, rforest_pred_proba[:, 1])
 rforest_score1 = score1(rforest_predict, y_test)
 print('rforest_auc is %f' %(rforest_auc), end = "\n")
 print('rforest_score1 is %f' %(rforest_score1), end = "\n")
-
-gradboost = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0)
-gradboost.fit(X_train,y_train)
-gradboost_predict = gradboost.predict(X_test)
-gradboost_pred_proba = gradboost.predict_proba(X_test)
-gradboost_auc = metrics.roc_auc_score(y_test, gradboost_pred_proba[:, 1])
-gradboost_score1 = score1(gradboost_predict, y_test)
-print('gradboost_auc is %f' %(gradboost_auc), end = "\n")
-print('gradboost_score1 is %f' %(gradboost_score1), end = "\n")
 
 svmsigmoid = SVC(kernel='sigmoid', probability=True)
 svmsigmoid.fit(X_train, y_train)

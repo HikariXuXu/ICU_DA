@@ -29,7 +29,7 @@ f.close()
 f = open('E:/WashU/Research/ICU/Data/val/val_mask_mat.pkl','rb')
 val_mask_mat = np.array(pickle.load(f))
 f.close()
-
+'''
 f = open('E:/WashU/Research/ICU/Data/test/X_test_sliced_norm.pkl','rb')
 X_test_sliced = np.array(pickle.load(f))
 f.close()
@@ -42,15 +42,15 @@ f.close()
 f = open('E:/WashU/Research/ICU/Data/test/test_mask_mat.pkl','rb')
 test_mask_mat = np.array(pickle.load(f))
 f.close()
-
+'''
 
 f = open('E:/WashU/Research/ICU/Data/mean_norm.pkl','rb')
 mean = np.array(pickle.load(f))
 f.close()
 
 
-X_train_sliced = np.array(imputeNearest(X_train_sliced, mean))
-X_val_sliced = np.array(imputeNearest(X_val_sliced, mean))
+X_train_sliced = np.array(imputeLast(X_train_sliced, mean))
+X_val_sliced = np.array(imputeLast(X_val_sliced, mean))
 
-generator, discriminator = train(X_train_sliced, train_mask_mat, train_delta_mat, 128, 23, 10, 0.01, 8)
-imputation(generator, discriminator, X_train_sliced, train_mask_mat, 64, 128, 0.01, 5, 300)
+generator, discriminator = train(X_train_sliced, train_mask_mat, train_delta_mat, 128, 22, 5, 0.01, 8)
+imputation(generator, discriminator, X_train_sliced, train_mask_mat, 64, 0.01, 5, 150)

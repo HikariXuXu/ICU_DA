@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from GRUI import GRUIModel
+from GRUM import GRUMModel
 
 torch.manual_seed(0)
 
@@ -9,7 +9,7 @@ class PretrainGenerator(nn.Module):
         super(PretrainGenerator, self).__init__()
         self.num_inputs = num_inputs
         self.num_hiddens = num_hiddens
-        self.grui_model = GRUIModel(num_inputs, num_hiddens)
+        self.grum_model = GRUMModel(num_inputs, num_hiddens)
         self.slice_gaps = slice_gaps
         self.time_steps = 2880//slice_gaps
         self.drop_prob = drop_prob
@@ -18,33 +18,33 @@ class PretrainGenerator(nn.Module):
             return torch.randn(size=shape) * 0.01
         
         # Parameters of fully connected layer
-        # self.W_fc = nn.ParameterList([nn.Parameter(normal((num_hiddens, num_inputs))) for i in range(self.time_steps)])
-        # self.b_fc = nn.ParameterList([nn.Parameter(torch.zeros(num_inputs)) for i in range(self.time_steps)])
+        self.W_fc = nn.ParameterList([nn.Parameter(normal((num_hiddens, num_inputs))) for i in range(self.time_steps)])
+        self.b_fc = nn.ParameterList([nn.Parameter(torch.zeros(num_inputs)) for i in range(self.time_steps)])
+        '''
         self.W_fc = nn.Parameter(normal((num_hiddens, num_inputs)))
         self.b_fc = nn.Parameter(torch.zeros(num_inputs))
+        '''
     
     def forward(self, X, Delta, H):
-        states = self.grui_model(X, Delta, H)
+        states = self.grum_model(X, Delta, H)
         states = states.view(X.shape[0], X.shape[1], self.num_hiddens)
         # Full connect
         f_dropout = nn.Dropout(p = self.drop_prob)
         imputed_result = torch.tensor([])
         for i in range(states.shape[0]):
-            # out_imputed = f_dropout(states[i]) @ self.W_fc[i] + self.b_fc[i]
-            out_imputed = f_dropout(states[i]) @ self.W_fc + self.b_fc
+            out_imputed = f_dropout(states[i]) @ self.W_fc[i] + self.b_fc[i]
             imputed_result = torch.cat((imputed_result, out_imputed), dim = 0)
         imputed_result = imputed_result.view(X.shape[0], X.shape[1], self.num_inputs)
         
         return imputed_result
     
     
-'''
 class Generator(nn.Module):
     def __init__(self, num_inputs, num_hiddens, slice_gaps, z_dim, drop_prob):
         super(Generator, self).__init__()
         self.num_inputs = num_inputs
         self.num_hiddens = num_hiddens
-        self.grui_model = GRUIModel(num_inputs, num_hiddens)
+        self.grum_model = GRUMModel(num_inputs, num_hiddens)
         self.slice_gaps = slice_gaps
         self.time_steps = 2880//slice_gaps
         self.z_dim = z_dim
@@ -57,10 +57,12 @@ class Generator(nn.Module):
         self.W_rv2x = nn.Parameter(normal((z_dim, num_inputs)))
         self.b_x = nn.Parameter(torch.zeros(num_inputs))
         # Parameters of fully connected layer
-        # self.W_fc = nn.ParameterList([nn.Parameter(normal((num_hiddens, num_inputs))) for i in range(self.time_steps)])
-        # self.b_fc = nn.ParameterList([nn.Parameter(torch.zeros(num_inputs)) for i in range(self.time_steps)])
+        self.W_fc = nn.ParameterList([nn.Parameter(normal((num_hiddens, num_inputs))) for i in range(self.time_steps)])
+        self.b_fc = nn.ParameterList([nn.Parameter(torch.zeros(num_inputs)) for i in range(self.time_steps)])
+        '''
         self.W_fc = nn.Parameter(normal((num_hiddens, num_inputs)))
         self.b_fc = nn.Parameter(torch.zeros(num_inputs))
+        '''
     
     def forward(self, rv, H, batch_size):
         if rv is None:
@@ -71,52 +73,13 @@ class Generator(nn.Module):
         X = X.view(self.time_steps, batch_size, self.num_inputs)
         Delta = self.slice_gaps*torch.ones(self.time_steps, batch_size, self.num_inputs)
         
-        states = self.grui_model(X, Delta, H)
+        states = self.grum_model(X, Delta, H)
         states = states.view(X.shape[0], X.shape[1], self.num_hiddens)
         # Full connect
         f_dropout = nn.Dropout(p = self.drop_prob)
         imputed_result = torch.tensor([])
         for i in range(states.shape[0]):
-            # out_imputed = f_dropout(states[i]) @ self.W_fc[i] + self.b_fc[i]
-            out_imputed = f_dropout(states[i]) @ self.W_fc + self.b_fc
-            imputed_result = torch.cat((imputed_result, out_imputed), dim = 0)
-        imputed_result = imputed_result.view(X.shape[0], X.shape[1], self.num_inputs)
-        
-        # batch_normalization???
-        
-        return imputed_result, Delta, states[-1]
-'''
-class Generator(nn.Module):
-    def __init__(self, num_inputs, num_hiddens, slice_gaps, drop_prob):
-        super(Generator, self).__init__()
-        self.num_inputs = num_inputs
-        self.num_hiddens = num_hiddens
-        self.grui_model = GRUIModel(num_inputs, num_hiddens)
-        self.slice_gaps = slice_gaps
-        self.time_steps = 2880//slice_gaps
-        self.drop_prob = drop_prob
-        
-        def normal(shape):
-            return torch.randn(size=shape) * 0.01
-        
-        # Parameters of fully connected layer
-        # self.W_fc = nn.ParameterList([nn.Parameter(normal((num_hiddens, num_inputs))) for i in range(self.time_steps)])
-        # self.b_fc = nn.ParameterList([nn.Parameter(torch.zeros(num_inputs)) for i in range(self.time_steps)])
-        self.W_fc = nn.Parameter(normal((num_hiddens, num_inputs)))
-        self.b_fc = nn.Parameter(torch.zeros(num_inputs))
-    
-    def forward(self, X, H):
-        X = X + torch.randn((self.time_steps, X.shape[1], self.num_inputs)) * 0.25
-        Delta = self.slice_gaps*torch.ones(self.time_steps, X.shape[1], self.num_inputs)
-        
-        states = self.grui_model(X, Delta, H)
-        states = states.view(X.shape[0], X.shape[1], self.num_hiddens)
-        # Full connect
-        f_dropout = nn.Dropout(p = self.drop_prob)
-        imputed_result = torch.tensor([])
-        for i in range(states.shape[0]):
-            # out_imputed = f_dropout(states[i]) @ self.W_fc[i] + self.b_fc[i]
-            out_imputed = f_dropout(states[i]) @ self.W_fc + self.b_fc
+            out_imputed = f_dropout(states[i]) @ self.W_fc[i] + self.b_fc[i]
             imputed_result = torch.cat((imputed_result, out_imputed), dim = 0)
         imputed_result = imputed_result.view(X.shape[0], X.shape[1], self.num_inputs)
         
@@ -130,7 +93,7 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         self.num_inputs = num_inputs
         self.num_hiddens = num_hiddens
-        self.grui_model = GRUIModel(num_inputs, num_hiddens)
+        self.grum_model = GRUMModel(num_inputs, num_hiddens)
         self.drop_prob = drop_prob
         
         def normal(shape):
@@ -141,7 +104,7 @@ class Discriminator(nn.Module):
         self.b_fc = nn.Parameter(torch.zeros(1))
         
     def forward(self, X, Delta, H):
-        states = self.grui_model(X, Delta, H)
+        states = self.grum_model(X, Delta, H)
         states = states.view(X.shape[0], X.shape[1], self.num_hiddens)
         # Full connect
         f_dropout = nn.Dropout(p = self.drop_prob)

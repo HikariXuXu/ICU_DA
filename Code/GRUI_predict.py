@@ -4,8 +4,10 @@ import numpy as np
 import torch
 from predictor import Predictor, train_grui_model
 
+np.random.seed(0)
 
-f = open('E:/WashU/Research/ICU/Data/train/X_train_sliced_norm_GAN.pkl','rb')
+
+f = open('E:/WashU/Research/ICU/Data/train/X_train_sliced_norm_lastGAN.pkl','rb')
 X_train_sliced = pickle.load(f)
 f.close()
 f = open('E:/WashU/Research/ICU/Data/train/y_train.pkl','rb')
@@ -15,7 +17,7 @@ f = open('E:/WashU/Research/ICU/Data/train/train_delta_mat.pkl','rb')
 train_delta_mat = pickle.load(f)
 f.close()
 
-f = open('E:/WashU/Research/ICU/Data/val/X_val_sliced_norm_GAN.pkl','rb')
+f = open('E:/WashU/Research/ICU/Data/val/X_val_sliced_norm_lastGAN.pkl','rb')
 X_test_sliced = pickle.load(f)
 f.close()
 f = open('E:/WashU/Research/ICU/Data/val/y_val.pkl','rb')
@@ -51,5 +53,5 @@ delta_resampled = np.array(delta_resampled)
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Predictor(num_inputs=X_resampled.shape[2], num_hiddens=64, imputeMethod='GAN', scaleMethod='Norm').to(device)
+model = Predictor(num_inputs=X_resampled.shape[2], num_hiddens=64, imputeMethod='lastGAN', scaleMethod='Norm').to(device)
 model = train_grui_model(model, X_resampled, y_resampled, delta_resampled, X_test_sliced, y_test, test_delta_mat, batch_size=32, lr=0.1, num_epoch=100)
